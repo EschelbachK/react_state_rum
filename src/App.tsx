@@ -1,21 +1,50 @@
+// React-Hook useState importieren, um State in der Komponente zu nutzen
 import { useState } from "react";
+// Unsere Charakter-Daten importieren
 import { response } from "./data";
+// Komponente zum Anzeigen einzelner Charakterkarten importieren
 import { CharacterCard } from "./CharacterCard";
+// Suchfeld-Komponente importieren
+import { Searchbar } from "./Searchbar";
 
 export default function App() {
-    // Anfangsdaten aus unserer data.ts als Zustand (State) speichern
+    // Alle Charaktere aus den Daten als State speichern (unveränderlich)
     const [characters] = useState(response.results);
+    // Suchbegriff als State speichern, startet leer
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // Filtere die Charaktere nach dem Suchbegriff (Groß-/Kleinschreibung ignorieren)
+    const filteredCharacters = characters.filter((char) =>
+        char.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Funktion zum Aktualisieren des Suchbegriffs (wird an Searchbar übergeben)
+    function handleSearch(value: string) {
+        setSearchTerm(value);
+    }
 
     return (
         <div style={{ padding: "20px" }}>
             <h1>Rick & Morty Galerie</h1>
+
+            {/* Suchfeld mit aktuellem Suchbegriff und Funktion zum Ändern */}
+            <Searchbar searchTerm={searchTerm} onSearchChange={handleSearch} />
+
+            {/* Fehlermeldung, wenn kein Charakter zum Suchbegriff passt */}
+            {filteredCharacters.length === 0 && (
+                <p style={{ color: "red" }}>
+                    Keine Charaktere gefunden, die "{searchTerm}" enthalten.
+                </p>
+            )}
+
+            {/* Flexbox-Container für die Charakterkarten */}
             <div style={{
-                display: "flex",     // Flexbox Layout für die Karten
-                gap: "10px",         // Abstand zwischen den Karten
-                flexWrap: "wrap"     // Karten umbrechen, wenn nicht mehr Platz ist
+                display: "flex",
+                gap: "10px",
+                flexWrap: "wrap"
             }}>
-                {/* Über alle Charaktere iterieren und für jeden eine CharacterCard anzeigen */}
-                {characters.map((char) => (
+                {/* Für jeden gefilterten Charakter eine CharacterCard anzeigen */}
+                {filteredCharacters.map((char) => (
                     <CharacterCard
                         key={char.id}        // Einzigartiger Schlüssel für React
                         name={char.name}     // Name an CharacterCard weitergeben
@@ -26,18 +55,3 @@ export default function App() {
         </div>
     );
 }
-
-/*
-ERKLÄRUNG:
-1. useState speichert die Charakter-Daten aus response.results als "characters".
-
-2. Im JSX wird ein Container mit Überschrift angezeigt.
-
-3. Im inneren Container (Flexbox) gehen wir mit .map() durch alle Charaktere.
-
-4. Für jeden Charakter wird eine CharacterCard-Komponente gerendert, die Name und Bild zeigt.
-
-5. key ist wichtig für React, damit es die Karten unterscheiden kann.
-
-6. So entsteht die Galerie mit allen Charakteren aus unseren Daten.
-*/
